@@ -1,0 +1,7 @@
+[
+  {"Weather_Condition":"Dry","Adhesion_Coefficient":0.35,"Visibility_KM":10,"Braking_Distance_Multiplier":1.0},
+  {"Weather_Condition":"Rain","Adhesion_Coefficient":0.25,"Visibility_KM":5,"Braking_Distance_Multiplier":1.3},
+  {"Weather_Condition":"Fog","Adhesion_Coefficient":0.22,"Visibility_KM":0.8,"Braking_Distance_Multiplier":1.5},
+  {"Weather_Condition":"Heavy Rain","Adhesion_Coefficient":0.18,"Visibility_KM":3,"Braking_Distance_Multiplier":1.6},
+  {"Weather_Condition":"Winter Fog","Adhesion_Coefficient":0.15,"Visibility_KM":0.4,"Braking_Distance_Multiplier":1.8}
+]

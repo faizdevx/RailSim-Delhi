@@ -1,0 +1,21 @@
+Train_ID,Train_Name,Type,Priority_Score,Source,Destination,Scheduled_Arrival_NDLS,Dwell_Time_Secs
+VB01,Vande Bharat Express 1,VB,1,Bhopal,New Delhi,06:45,300
+VB02,Vande Bharat Express 2,VB,1,Varanasi,New Delhi,09:10,300
+RJ01,Howrah Rajdhani,RAJ,2,Howrah,New Delhi,07:30,420
+RJ02,Mumbai Rajdhani,RAJ,2,Mumbai Central,New Delhi,10:00,420
+EMU01,Delhi EMU Loop A,EMU,3,Faridabad,New Delhi,08:15,180
+EMU02,Delhi EMU Loop B,EMU,3,Ghaziabad,New Delhi,08:40,180
+EMU03,Delhi EMU Loop C,EMU,3,Palwal,New Delhi,09:25,180
+FRT01,Tughlakabad Freight 1,FRT,5,Tughlakabad,Dadri,05:50,0
+FRT02,Tughlakabad Freight 2,FRT,5,Tughlakabad,Rewari,06:20,0
+FRT03,Container Freight A,FRT,5,Dadri,Ajmer,07:10,0
+VB03,Vande Bharat Express 3,VB,1,Ambala,New Delhi,11:05,300
+RJ03,Chennai Rajdhani,RAJ,2,Chennai,New Delhi,13:30,420
+EMU04,Delhi EMU Loop D,EMU,3,Panipat,New Delhi,12:20,180
+EMU05,Delhi EMU Loop E,EMU,3,Meerut,New Delhi,13:10,180
+FRT04,Steel Freight,FRT,5,Bhilai,Dadri,14:00,0
+FRT05,Cement Freight,FRT,5,Chittorgarh,Dadri,15:30,0
+VB04,Vande Bharat Express 4,VB,1,Jaipur,New Delhi,16:10,300
+RJ04,Bangalore Rajdhani,RAJ,2,Bangalore,New Delhi,18:40,420
+EMU06,Delhi EMU Loop F,EMU,3,Rohtak,New Delhi,17:25,180
+FRT06,Mixed Goods,FRT,5,Rewari,Tughlakabad,19:10,0

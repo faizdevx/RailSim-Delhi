@@ -1,0 +1,11 @@
+Signal_ID,Track_ID,KM_Post,Aspect_Count,Interlocking_Type
+S001,UP_MAIN,152.4,4,Electronic
+S002,DN_MAIN,153.1,4,Electronic
+S003,OKHLA_LOOP,158.6,4,Electronic
+S004,NDLS_ENTRY_A,160.2,4,Electronic
+S005,NDLS_ENTRY_B,160.5,4,Electronic
+S006,HZN_JUNCTION,145.8,4,Electronic
+S007,PRAGATI_SECTION,150.3,4,Electronic
+S008,TKD_FREIGHT,170.9,4,Electronic
+S009,NDLS_THROAT_1,161.0,4,Electronic
+S010,NDLS_THROAT_2,161.3,4,Electronic

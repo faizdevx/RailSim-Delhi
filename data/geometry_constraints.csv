@@ -1,0 +1,16 @@
+Segment_ID,Station_Context,Type,Radius_or_Angle,Max_Permissible_Speed_KMH,Notes
+G001,Hazrat Nizamuddin North Curve,Curve,450,60,Tight urban curve approaching platforms
+G002,Hazrat Nizamuddin Yard Turnout,Turnout,1:12,40,Standard BG turnout for yard divergence
+G003,Okhla Outer Curve,Curve,600,75,Moderate radius suburban alignment
+G004,Okhla Mainline Turnout,Turnout,1:16,50,High-speed turnout for mainline merge
+G005,New Delhi South Entry Curve A,Curve,500,65,Approach curvature before NDLS throat
+G006,New Delhi South Entry Turnout B,Turnout,1:12,40,Platform routing turnout
+G007,Pragati Maidan Curve,Curve,800,90,Smoother curve on elevated section
+G008,Tughlakabad Loop Turnout,Turnout,1:8.5,30,Freight loop low-speed turnout
+G009,Sarai Kale Khan Curve,Curve,700,85,Medium-radius interlocking curve
+G010,Hazrat Nizamuddin South Turnout,Turnout,1:16,50,Through turnout for fast passenger
+G011,Okhla Yard Curve,Curve,350,45,Sharp yard curvature
+G012,NDLS Throat Turnout C,Turnout,1:12,40,Dense throat interlocking
+G013,NDLS Throat Curve D,Curve,400,55,Platform fan-out curve
+G014,Tughlakabad Main Curve,Curve,900,100,Freight corridor main alignment
+G015,Pragati Maidan Turnout,Turnout,1:16,50,Cross-over for suburban EMU routing
