@@ -6,28 +6,21 @@ from gymnasium import spaces
 from env.loader import load_all
 from env.state_mapper import build_state
 
-
 class RailwayEnv(gym.Env):
 
     def __init__(self):
         super().__init__()
 
         self.geometry, self.timetable, self.signals, self.physics = load_all()
-        self.speed = 0
-        self.prev_speed = 0
-        self.distance = 0
-        self.braking_rate = 0
-        self.platform_available = 0
-        self.track_capacity = 0
 
-        # 3 actions: coast, accelerate, brake
+        # FIX A: Actions are now 0, 1, 2 (Directly mapping to train indices)
         self.action_space = spaces.Discrete(3)
 
-        # now 14-dimensional continuous state
+        # 3 trains × 4 + 3 blocks = 15
         self.observation_space = spaces.Box(
             low=0.0,
             high=1.0,
-            shape=(14,),
+            shape=(15,),
             dtype=np.float32
         )
 
@@ -36,153 +29,82 @@ class RailwayEnv(gym.Env):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
 
-        self.train = self.timetable.sample().iloc[0]
-        self.segment = self.geometry.sample().iloc[0]
-        self.env = random.choice(self.physics)
+        # FIX C: Hard episode limit initialization
+        self.step_count = 0
 
-        self.signal = random.randint(0, 3)
+        # Initialize blocks
+        self.blocks = [
+            {"id": 0, "occupied_by": None},
+            {"id": 1, "occupied_by": None},
+            {"id": 2, "occupied_by": None}
+        ]
 
-        # new dynamics
-        self.speed = random.uniform(20, 80)
-        self.prev_speed = self.speed
-        self.distance = random.uniform(500, 3000)
-        self.braking_rate = random.uniform(0.5, 1.5)
-        self.platform_available = random.randint(0, 1)
-        self.track_capacity = random.uniform(0.5, 1.0)
-        self.delay = 0
-        self.scheduled_distance = self.distance
-
-        # Occupancy derived from velocity (physical)
-        geo_speed = float(self.segment.get("Max_Permissible_Speed_KMH", 130))
-        self.occupancy = np.clip(self.speed / max(geo_speed, 1e-5), 0.0, 1.0)
+        # Spawn 3 trains
+        self.trains = []
+        for i in range(3):
+            meta = self.timetable.sample().iloc[0]
+            self.trains.append({
+                "meta": meta,
+                "speed": random.uniform(40, 80),
+                "distance": random.uniform(50, 200),
+                "block": i,
+                "done": False
+            })
+            self.blocks[i]["occupied_by"] = i
 
         return self._get_state(), {}
 
     def _get_state(self):
-        state = build_state(
-            self.train,
-            self.segment,
-            self.env,
-            self.signal,
-            self.occupancy,
-            self.speed,
-            self.speed - self.prev_speed,
-            self.distance,
-            self.braking_rate,
-            self.platform_available,
-            self.track_capacity
-        )
-
-        state = np.asarray(state, dtype=np.float32)
-
-        # ensure returned state matches observation_space shape (14,)
-        if state.size < 14:
-            pad = np.zeros(14 - state.size, dtype=np.float32)
-            state = np.concatenate([state, pad])
-        elif state.size > 14:
-            state = state[:14]
-
-        return state
+        return build_state(self.trains, self.blocks)
 
     def step(self, action):
+        # FIX C: Increment step count
+        self.step_count += 1
+        
+        # Total remaining distance before action
+        total_remaining = sum(t["distance"] for t in self.trains if not t["done"])
 
-        # REAL PHYSICS CORE
-        dt = 1.0  # 1 second timestep
-        g = 9.81
-        mu = float(self.env.get("Adhesion_Coefficient", 0.3))
+        # FIX A: Direct mapping
+        selected = action 
+        reward = 0.0
 
-        # Max accel from adhesion
-        a_max = mu * g
+        for i, train in enumerate(self.trains):
+            if train["done"]:
+                continue
 
-        # Driver command
-        if action == 1:
-            desired_accel = a_max
-        elif action == 2:
-            desired_accel = -self.braking_rate * g
-        else:
-            desired_accel = 0.0
+            # FIX B: All trains move every step
+            train["distance"] -= train["speed"]
+            
+            # Penalty for every step taken (incentivizes speed)
+            reward -= 0.001
 
-        # Geometry speed limit
-        geo_speed = float(self.segment.get("Max_Permissible_Speed_KMH", 130))
+            # FIX D: Simplified completion & transition
+            if train["distance"] <= 0:
+                train["block"] += 1
+                train["distance"] = random.uniform(50, 200)
 
-        # Block congestion auto-brake
-        # occupancy uses previous step value here
-        if self.occupancy > 0.8:
-            desired_accel = -self.braking_rate * g
+                if train["block"] >= 2:
+                    train["done"] = True
+                    reward += 20  # Big finish bonus
 
-        # Red signal protection
-        if self.signal == 0:
-            stop_dist = (self.speed ** 2) / (2 * self.braking_rate * g + 1e-5)
-            if stop_dist >= self.distance:
-                desired_accel = -self.braking_rate * g
+            # Selection logic: Reward the agent if the train it "focused" on made progress
+            if i == selected:
+                reward += 0.1 
 
-        # Apply acceleration
-        self.prev_speed = self.speed
-        self.speed += desired_accel * dt
-
-        # Speed bounds (geometry speed limit)
-        self.speed = np.clip(self.speed, 0.0, geo_speed)
-
-        # Position update
-        self.distance -= self.speed * dt
-
-        # Update occupancy physically (congestion relates to velocity)
-        self.occupancy = np.clip(self.speed / max(geo_speed, 1e-5), 0.0, 1.0)
-
-        # Update delay
-        if self.distance > 0:
-            self.delay = min(self.delay + 1, 300)
-
-        # Acceleration (for state)
-        acceleration = self.speed - self.prev_speed
-
-        # stochastic signal
-        if random.random() < 0.2:
-            self.signal = random.randint(0, 3)
-
-        # Overspeed penalty
-        speed_limit = self.segment.get("Max_Permissible_Speed_KMH", 130)
-        overspeed = max(0.0, self.speed - speed_limit)
-        overspeed_penalty = min(overspeed / 10.0, 2.0)
-
-        # Signal violation penalty (red == 0)
-        signal_penalty = 0.0
-        if self.signal == 0 and self.speed > 5:
-            signal_penalty = 5.0
-
-        # Congestion penalty
-        congestion_penalty = self.occupancy * 2.0
-
-        # Priority-weighted delay (normalized)
-        priority = float(self.train.get("Priority_Score", 1.0))
-        delay_penalty = (self.delay / 300.0) * priority
-
-        # Progress reward
-        if self.scheduled_distance > 0:
-            progress = (self.scheduled_distance - self.distance) / self.scheduled_distance
-            progress = max(0.0, progress)
-        else:
-            progress = 1.0 if self.distance <= 0 else 0.0
-        progress_reward = progress * 2.0
-
-        # Arrival bonus (reduced)
-        arrival_bonus = 5.0 if self.distance <= 0 else 0.0
-
-        reward = (
-            -delay_penalty
-            -congestion_penalty
-            -overspeed_penalty
-            -signal_penalty
-            +progress_reward
-            +arrival_bonus
-        )
-
-        # Termination on arrival
-        terminated = self.distance <= 0
-
+        # Termination logic
+        terminated = all(t["done"] for t in self.trains)
+        
+        # FIX C: Hard Episode Limit
+        if self.step_count >= 200:
+            terminated = True
+            
         truncated = False
 
-        # Bound total reward
+        # Progress shaping
+        new_remaining = sum(t["distance"] for t in self.trains if not t["done"])
+        progress = (total_remaining - new_remaining) / 3000.0
+        reward += progress * 20.0
+
         reward = np.clip(reward, -10, 10)
 
         return self._get_state(), reward, terminated, truncated, {}
