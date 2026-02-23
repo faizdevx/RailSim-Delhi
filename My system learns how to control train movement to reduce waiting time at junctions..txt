@@ -1,5 +1,0 @@
-✅ Proper Gym environment
-✅ Deterministic termination
-✅ Dense reward
-✅ PPO convergence
-✅ Stable training curves
